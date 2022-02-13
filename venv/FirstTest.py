@@ -2,7 +2,7 @@ from appium import webdriver
 import pytest
 import allure
 import openpyxl
-# from .steps import imported_step
+
 
 desired_cap = {
   "automationName": "UiAutomator2",
@@ -15,37 +15,32 @@ desired_cap = {
 
 driver = webdriver.Remote("http://localhost:4723/wd/hub", desired_cap)
 driver.implicitly_wait(30)
-
-# @allure.feature('Report Generation')
-# @allure.testcase('Emi-cal Validity Check')
+driver.find_element_by_id('com.continuum.emi.calculator:id/btnStart').click()
 
 # Getting Data from Excel Files
 def get_data():
 
   workbook = openpyxl.load_workbook(r"C:\Users\BS726\Desktop\Allure-Test-Report\data_for_emi.xlsx")
   sheet = workbook["Sheet1"]
-  totalcolums = sheet.max_column
   totalrows = sheet.max_row
+  totalcolums = sheet.max_column
   mainList = []
 
 
   for i in range(2,totalrows+1):
     dataList = []
     for j in range(1, totalcolums+1):
-      data = sheet.cell(row=i, column = j).value
+      data = sheet.cell(row=i, column=j).value
       dataList.insert(j,data)
     mainList.insert(i,dataList)
-    return mainList
+  return mainList
 
 
 
 @pytest.mark.parametrize("ammount,interest,periody,periodm,pfee", get_data())
 @allure.testcase('Emi-cal Test Solution')
 def test_case(ammount,interest,periody,periodm,pfee):
-    #with allure.step("Launch App"):
 
-    ##Click on the emi button to go into emi window
-    driver.find_element_by_id('com.continuum.emi.calculator:id/btnStart').click()
     ## Enter Values In the Ammount Filed
     search_element_ammount = driver.find_element_by_id('com.continuum.emi.calculator:id/etLoanAmount')
     search_element_ammount.send_keys(ammount)
@@ -69,5 +64,10 @@ def test_case(ammount,interest,periody,periodm,pfee):
     ##Click the Calcualte Button
     driver.find_element_by_id('com.continuum.emi.calculator:id/btnCalculate').click()
 
+    ## Click Reset Button to load Other Values
+    driver.find_element_by_id('com.continuum.emi.calculator:id/btnReset').click()
+
+    ## 30 seconds wait again
+    driver.implicitly_wait(30)
 
 
